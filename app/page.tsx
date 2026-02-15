@@ -6,20 +6,17 @@ import { useEffect } from "react";
 import { start } from "repl";
 
 type Todo = {
-  id:number;
-  name:string;
-  description:string;
-  startDate:string;
-  endDate:string;
-  duration:number;
-  status:"TODO"|"SUCCESS";
-
-}
+  id: string;
+  name: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  duration: number;
+  status: "TODO" | "SUCCESS";
+};
 
 export default function Home() {
-
-const [todos,setTodos] = useState<Todo[]>([])
-
+  const [todos, setTodos] = useState<Todo[]>([]);
 
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -30,25 +27,18 @@ const [todos,setTodos] = useState<Todo[]>([])
   console.log("description : ", description);
   console.log("StartDate : ", startDate);
 
-  useEffect(()=>{
+  useEffect(() => {
     fetchTodo();
+  }, []);
 
-   
-   
-    
-
-
-  },[])
-
-  const fetchTodo = async()=>{
-    const res = await fetch("http://localhost:3001/todos")
+  const fetchTodo = async () => {
+    const res = await fetch("http://localhost:3001/todos");
     const data = await res.json();
     setTodos(data);
     console.log(data);
-  } 
+  };
 
-    console.log("todos : ",todos);
-
+  console.log("todos : ", todos);
 
   return (
     <div className="flex flex-col min-h-screen items-center justify-center  font-sans bg-gray-500">
@@ -91,35 +81,34 @@ const [todos,setTodos] = useState<Todo[]>([])
               name=""
               id=""
               className="border p-2 rounded-2xl"
-              onChange={(e)=>setEndDate(e.target.value)}
+              onChange={(e) => setEndDate(e.target.value)}
             />
           </div>
         </div>
         <button className="bg-green-600 p-2 rounded-md">save</button>
-      </div> 
-      <div className="bg-gray-800 min-h-50 min-w-90 mt-5 rounded-2xl flex flex-col justify-center items-center">
-        <h1>To Do</h1>
-        <div className="flex">
-
-          {
-            todos.map((e,i)=>(
-              <div key={e.id} className="flex bg-gray-500 p-5 rounded-xl">
-                <h3>{e.name}</h3>
-                <p>{e.description}</p>
-                <p>{e.startDate}</p>
-                <p>{e.endDate}</p>
+      </div>
+      <div className="bg-gray-800 p-5 mt-5 rounded-2xl flex flex-col justify-center items-center">
+        <div className="bg-gray-700  p-5 mt-5 rounded-2xl flex flex-col justify-center items-center">
+          {todos.map((e, i) => (
+            <div
+              key={e.id}
+              className="bg-blue-500 w-100  flex flex-col justify-center space-x-5 mt-5 p-3 rounded-xl"
+            >
+              <div className="bg-green-500 ">
                 <p>{e.status}</p>
               </div>
-            ))
-          }
-          {/* <div className="flex bg-gray-500 p-5 rounded-xl">
-              
+              <div className="flex justify-between items-center">
+                <h3>{e.name}</h3>
+                <p>{e.description}</p>
+              </div>
 
-          </div> */}
-
+              <div className="flex justify-between items-center">
+                <p>{e.startDate}</p>
+                <p>{e.endDate}</p>
+              </div>
+            </div>
+          ))}
         </div>
-        
-
       </div>
     </div>
   );
