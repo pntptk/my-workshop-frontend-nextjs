@@ -92,19 +92,32 @@ export default function Home() {
           {todos.map((e, i) => (
             <div
               key={e.id}
-              className="bg-blue-500 w-100  flex flex-col justify-center space-x-5 mt-5 p-3 rounded-xl"
+              className="bg-green-700 w-100  flex flex-col justify-center space-x-5 mt-5 p-3 rounded-xl"
             >
-              <div className="bg-green-500 ">
+              <div
+                style={{
+                  backgroundColor: e.status == "TODO" ? "orange" : "green",
+                  color: e.status == "TODO" ? "black" : "white",
+                }}
+                className="bg-green-500 w-25 text-center rounded-xl px -2"
+              >
                 <p>{e.status}</p>
               </div>
-              <div className="flex justify-between items-center">
-                <h3>{e.name}</h3>
-                <p>{e.description}</p>
+              <div className="flex justify-between items-center mt-3">
+                <h3 className="text-2xl font-semibold">{e.name}</h3>
+              </div>
+              <div className="my-4">
+                <h3 className="font-semibold">description</h3>
+                <p className="border-black border-solid border-2 rounded-2xl p-2">
+                  {" "}
+                  {e.description} Lorem Ipsum is simply dummy text of the
+                  printing and typesetting industry. Lorem Ipsum has been the
+                </p>
               </div>
 
               <div className="flex justify-between items-center">
-                <p>{e.startDate}</p>
-                <p>{e.endDate}</p>
+                <p>Start : {e.startDate}</p>
+                <p>End : {e.endDate}</p>
               </div>
             </div>
           ))}
