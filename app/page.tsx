@@ -83,7 +83,7 @@ export default function Home() {
               className="border p-2 rounded-2xl"
               onChange={(e) => setEndDate(e.target.value)}
             />
-          </div>
+          </div>  
         </div>
         <button className="bg-green-600 p-2 rounded-md">save</button>
       </div>
