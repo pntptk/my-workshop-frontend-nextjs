@@ -104,6 +104,29 @@ export default function Home() {
     console.log("id : ", id);
   };
 
+  const deleteTodo = async (id: string) => {
+    try {
+      const res = await fetch(`http://localhost:3001/todos/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (res.ok) {
+        fetchTodo();
+      }
+    } catch (err) {
+      console.error("Failed to delete todo ", err);
+    }
+  };
+  const updateTodo = async (id:string) => {
+    
+    const index = todos.findIndex((t)=> t.id === id);
+    
+    if(index !== -1){
+      
+    }
+
+  }
+
   console.log("todos : ", todos);
 
   return (
@@ -162,6 +185,7 @@ export default function Home() {
       <div className="bg-gray-800 p-5 mt-5 rounded-2xl flex flex-col justify-center items-center">
         <div className="bg-gray-700  p-5 mt-5 rounded-2xl flex flex-col justify-center items-center">
           {todos.map((e, i) => (
+            
             <div
               key={e.id}
               className="bg-gray-500 w-100  flex flex-col justify-center space-x-5 mt-5 p-3 rounded-xl"
@@ -202,6 +226,17 @@ export default function Home() {
               <div className="flex justify-between items-center mt-2">
                 <p>Start : {e.startDate}</p>
                 <p>End : {e.endDate}</p>
+              </div>
+              <div className="flex justify-end mt-2">
+                <button className="bg-yellow-500 px-5 py-2 rounded-xl mx-2">
+                  Edit
+                </button>
+                <button
+                  className="bg-red-500 px-5 py-2 rounded-xl"
+                  onClick={() => deleteTodo(e.id)}
+                >
+                  Delete
+                </button>
               </div>
             </div>
           ))}
