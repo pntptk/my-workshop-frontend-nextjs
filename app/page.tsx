@@ -83,7 +83,7 @@ export default function Home() {
   };
 
   const updateStatus = async (id: string) => {
-    
+    console.log("id : ",id);
   };
 
   console.log("todos : ", todos);
@@ -160,6 +160,7 @@ export default function Home() {
                 </p>
 
                 <button
+                  onClick={() => updateStatus(e.id)}
                   style={{
                     background: e.status === "TODO" ? "green" : "red",
                   }}
