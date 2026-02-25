@@ -82,8 +82,26 @@ export default function Home() {
     }
   };
 
-  const updateStatus = async (id: string) => {
-    console.log("id : ",id);
+  const updateStatus = async (id: string, currentStatus: string) => {
+    const newStatus = currentStatus === "TODO" ? "SUCCESS" : "TODO";
+
+    try {
+      const res = await fetch(`http://localhost:3001/todos/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (res.ok) {
+        setTodos((prev) =>
+          prev.map((t) => (t.id === id ? { ...t, status: newStatus } : t)),
+        );
+      }
+    } catch (err) {
+      console.error("Failed to update status ", err);
+    }
+
+    console.log("id : ", id);
   };
 
   console.log("todos : ", todos);
@@ -160,7 +178,7 @@ export default function Home() {
                 </p>
 
                 <button
-                  onClick={() => updateStatus(e.id)}
+                  onClick={() => updateStatus(e.id, e.status)}
                   style={{
                     background: e.status === "TODO" ? "green" : "red",
                   }}
