@@ -22,6 +22,8 @@ export default function Home() {
   const [description, setDescription] = useState<string>("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [editToggle, setEditToggle] = useState(false);
+  const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
 
   console.log("name : ", name);
   console.log("description : ", description);
@@ -117,17 +119,34 @@ export default function Home() {
       console.error("Failed to delete todo ", err);
     }
   };
-  const updateTodo = async (id:string) => {
-    
-    const index = todos.findIndex((t)=> t.id === id);
-    
-    if(index !== -1){
-      
-    }
+  // const updateTodo = async (id: string) => {
+  //   const index = todos.findIndex((t) => t.id === id);
 
-  }
+  //   if (index !== -1) {
+  //   }
+  // };
 
   console.log("todos : ", todos);
+  console.log("Editing Todos : ", editingTodo);
+  const handleUpdateConfirm = async () => {
+    if (!editingTodo) return;
+
+    try {
+      const res = await fetch(`http://localhost:3001/todos/${editingTodo.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editingTodo),
+      });
+
+      if (res.ok) {
+        alert("editing success");
+        setEditToggle(false);
+        fetchTodo();
+      }
+    } catch (err) {
+      console.error("Failed to update : ", err);
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen items-center justify-center  font-sans bg-gray-500">
@@ -185,7 +204,6 @@ export default function Home() {
       <div className="bg-gray-800 p-5 mt-5 rounded-2xl flex flex-col justify-center items-center">
         <div className="bg-gray-700  p-5 mt-5 rounded-2xl flex flex-col justify-center items-center">
           {todos.map((e, i) => (
-            
             <div
               key={e.id}
               className="bg-gray-500 w-100  flex flex-col justify-center space-x-5 mt-5 p-3 rounded-xl"
@@ -228,7 +246,13 @@ export default function Home() {
                 <p>End : {e.endDate}</p>
               </div>
               <div className="flex justify-end mt-2">
-                <button className="bg-yellow-500 px-5 py-2 rounded-xl mx-2">
+                <button
+                  className="bg-yellow-500 px-5 py-2 rounded-xl mx-2"
+                  onClick={() => {
+                    setEditingTodo(e);
+                    setEditToggle(true);
+                  }}
+                >
                   Edit
                 </button>
                 <button
@@ -242,6 +266,98 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      {/* --- ส่วนของ Modal แก้ไขข้อมูล --- */}
+      {editToggle && editingTodo && (
+        <div className="fixed inset-0 z-50 flex justify-center items-center backdrop-blur-sm p-10  flex-col">
+          <div className="bg-gray-800 rounded-2xl  w-full p-5 max-w-md border border-black">
+            <h2 className="text-2xl font-bold text-center">Editing Task</h2>
+            <div className="">
+              <div className="mt-3 flex flex-col justify-center">
+                <label htmlFor="" className="font-bold">
+                  name{" "}
+                </label>
+                <input
+                  className="mt-1 p-5 border bordere-2xl rounded-2xl"
+                  type="text"
+                  value={editingTodo.name}
+                  onChange={(e) =>
+                    setEditingTodo({ ...editingTodo, name: e.target.value })
+                  }
+                />
+              </div>
+              <div className="mt-3 flex flex-col justify-center">
+                <label htmlFor="" className="font-bold">
+                  description
+                </label>
+                <input
+                  className="mt-1 p-5 border bordere-2xl rounded-2xl"
+                  type="text"
+                  value={editingTodo.description}
+                  onChange={(e) =>
+                    setEditingTodo({
+                      ...editingTodo,
+                      description: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="flex space-x-5 mt-5">
+                <div className="">
+                  <label htmlFor="" className="font-bold">
+                    startDate
+                  </label>
+                  <input
+                    className="mt-1 p-5 border bordere-2xl rounded-2xl"
+                    type="date"
+                    name=""
+                    id=""
+                    value={editingTodo.startDate}
+                    onChange={(e) =>
+                      setEditingTodo({
+                        ...editingTodo,
+                        startDate: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="">
+                  <label htmlFor="" className="font-bold">
+                    endDate
+                  </label>
+                  <input
+                    className="mt-1 p-5 border bordere-2xl rounded-2xl"
+                    type="date"
+                    name=""
+                    id=""
+                    value={editingTodo.endDate}
+                    onChange={(e) =>
+                      setEditingTodo({
+                        ...editingTodo,
+                        endDate: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-5">
+              <button
+                className="bg-gray-500 px-5 py-2 rounded-xl"
+                onClick={() => setEditToggle(false)}
+              >
+                cancle
+              </button>
+              <button
+                className="bg-green-500 px-5 py-2 rounded-xl"
+                onClick={handleUpdateConfirm}
+              >
+                save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
