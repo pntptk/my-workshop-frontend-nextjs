@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { useState } from "react";
 import { useEffect } from "react";
-import { start } from "repl";
 
 type Todo = {
   id: string;
@@ -17,13 +16,18 @@ type Todo = {
 
 export default function Home() {
   const [todos, setTodos] = useState<Todo[]>([]);
-
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [editToggle, setEditToggle] = useState(false);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
+
+  const [filterStatus, setFilterStatus] = useState<"ALL" | "TODO" | "SUCCESS">(
+    "ALL",
+  );
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   console.log("name : ", name);
   console.log("description : ", description);
@@ -32,6 +36,17 @@ export default function Home() {
   useEffect(() => {
     fetchTodo();
   }, []);
+
+  // Serach Function
+  const filteredTodos = todos.filter((todo) => {
+    const matchSearch =
+      todo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      todo.description.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchStatus = filterStatus === "ALL" || todo.status === filterStatus;
+
+    return matchSearch && matchStatus;
+  });
 
   const fetchTodo = async () => {
     const res = await fetch("http://localhost:3001/todos");
@@ -150,6 +165,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen items-center justify-center  font-sans bg-gray-500">
+      {/* Add Todo */}
       <div className="bg-gray-800 p-5 rounded-2xl flex flex-col justify-center">
         <h2 className="font-bold text-2xl text-center mb-5">To Do List</h2>
         <div className="flex flex-col justify-between">
@@ -201,9 +217,36 @@ export default function Home() {
           save
         </button>
       </div>
+
+      {/* Show Todo */}
       <div className="bg-gray-800 p-5 mt-5 rounded-2xl flex flex-col justify-center items-center">
+        {/* Search Todo  */}
+        <div className="flex flex-col">
+          <input
+            className="bg-gray-700 rounded-xl p-3 w-100"
+            type="text"
+            value={searchTerm}
+            placeholder="Search Todo"
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        <div className="mt-5 flex justify-center items-center space-x-5 w-full">
+          {["ALL","TODO","SUCCESS"].map((status)=>(
+            <button key={status} onClick={()=>setFilterStatus(status as any)} className={`px-6 py-2 rounded-full font-bold transition-all duration-300 ${
+              filterStatus === status
+              ? "bg-blue-500 text-white shadow-lg scale-105"
+              : "bg-gray-700 text-gray-400 hover:bg-gray-600"
+            }`}>
+              {status}
+            </button>
+          ))}
+        </div>
+
+
+        {/* Show Todo List */}
         <div className="bg-gray-700  p-5 mt-5 rounded-2xl flex flex-col justify-center items-center">
-          {todos.map((e, i) => (
+          {filteredTodos.map((e, i) => (
             <div
               key={e.id}
               className="bg-gray-500 w-100  flex flex-col justify-center space-x-5 mt-5 p-3 rounded-xl"
@@ -235,10 +278,7 @@ export default function Home() {
               </div>
               <div className="my-4">
                 <h3 className="font-semibold">description</h3>
-                <p className="bg-gray-400 rounded-2xl p-2">
-                  {e.description} Lorem Ipsum is simply dummy text of the
-                  printing and typesetting industry. Lorem Ipsum has been the
-                </p>
+                <p className="bg-gray-400 rounded-2xl p-2">{e.description}</p>
               </div>
 
               <div className="flex justify-between items-center mt-2">
