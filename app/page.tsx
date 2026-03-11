@@ -33,6 +33,14 @@ export default function Home() {
   console.log("description : ", description);
   console.log("StartDate : ", startDate);
 
+  //Bar Graph
+
+  const totalTasks = todos.length; // งานทั้งหมด
+  const completedTasks = todos.filter((t) => t.status === "SUCCESS").length;
+
+  //ป้องกัน totalTask เป็น 0 เพื่อไม่ให้เกิด Error Division by zero
+  const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+
   useEffect(() => {
     fetchTodo();
   }, []);
@@ -231,79 +239,113 @@ export default function Home() {
           />
         </div>
 
-        <div className="mt-5 flex justify-center items-center space-x-5 w-full">
-          {["ALL","TODO","SUCCESS"].map((status)=>(
-            <button key={status} onClick={()=>setFilterStatus(status as any)} className={`px-6 py-2 rounded-full font-bold transition-all duration-300 ${
-              filterStatus === status
-              ? "bg-blue-500 text-white shadow-lg scale-105"
-              : "bg-gray-700 text-gray-400 hover:bg-gray-600"
-            }`}>
-              {status}
-            </button>
-          ))}
+        {/* progress bar */}
+        <div className="w-full max-w-md px-4">
+          <div className="flex justify-between mt-3">
+            <h3>Daily Progress</h3>
+            <h3>{Math.round(progress)}%</h3>
+          </div>
+          <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden border border-gray-700">
+            <div
+              className={`${
+                progress < 50 ? `bg-yellow-500`:"bg-green-500"
+              } h-full transition-all duration-500 ease-out`}
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+          <div className="flex justify-end mt-2 text-sm text-gray-400">
+            <span>{completedTasks} of {totalTasks} task completed </span>
+          </div>
         </div>
 
+        <div className="mt-5 flex justify-center items-center space-x-5 w-full">
+          {["ALL", "TODO", "SUCCESS"].map((status) => {
+            const countStatus =
+              status === "ALL"
+                ? todos.length
+                : todos.filter((t) => t.status === status).length;
+            return (
+              <button
+                key={status}
+                onClick={() => setFilterStatus(status as any)}
+                className={`px-6 py-2 rounded-full font-bold transition-all duration-300 ${
+                  filterStatus === status
+                    ? "bg-blue-500 text-white shadow-lg scale-105"
+                    : "bg-gray-700 text-gray-400 hover:bg-gray-600"
+                }`}
+              >
+                {status} ({countStatus})
+              </button>
+            );
+          })}
+        </div>
 
         {/* Show Todo List */}
         <div className="bg-gray-700  p-5 mt-5 rounded-2xl flex flex-col justify-center items-center">
-          {filteredTodos.map((e, i) => (
-            <div
-              key={e.id}
-              className="bg-gray-500 w-100  flex flex-col justify-center space-x-5 mt-5 p-3 rounded-xl"
-            >
-              <div className="flex justify-between">
-                <p
-                  style={{
-                    backgroundColor: e.status == "TODO" ? "orange" : "green",
-                    color: e.status == "TODO" ? "black" : "white",
-                  }}
-                  className="bg-green-200 w-25 text-center rounded-xl px-2"
-                >
-                  {e.status}
-                </p>
+          {filteredTodos.length > 0 ? (
+            filteredTodos.map((e, i) => (
+              <div
+                key={e.id}
+                className="bg-gray-500 w-100  flex flex-col justify-center space-x-5 mt-5 p-3 rounded-xl"
+              >
+                <div className="flex justify-between">
+                  <p
+                    style={{
+                      backgroundColor: e.status == "TODO" ? "orange" : "green",
+                      color: e.status == "TODO" ? "black" : "white",
+                    }}
+                    className="bg-green-200 w-25 text-center rounded-xl px-2"
+                  >
+                    {e.status}
+                  </p>
 
-                <button
-                  onClick={() => updateStatus(e.id, e.status)}
-                  style={{
-                    background: e.status === "TODO" ? "green" : "red",
-                  }}
-                  className="px-2 rounded-full "
-                >
-                  {e.status === "TODO" ? "✓" : "X"}
-                </button>
-              </div>
+                  <button
+                    onClick={() => updateStatus(e.id, e.status)}
+                    style={{
+                      background: e.status === "TODO" ? "green" : "red",
+                    }}
+                    className="px-2 rounded-full "
+                  >
+                    {e.status === "TODO" ? "✓" : "X"}
+                  </button>
+                </div>
 
-              <div className="flex justify-between items-center mt-3">
-                <h3 className="text-3xl font-semibold">{e.name}</h3>
-              </div>
-              <div className="my-4">
-                <h3 className="font-semibold">description</h3>
-                <p className="bg-gray-400 rounded-2xl p-2">{e.description}</p>
-              </div>
+                <div className="flex justify-between items-center mt-3">
+                  <h3 className="text-3xl font-semibold">{e.name}</h3>
+                </div>
+                <div className="my-4">
+                  <h3 className="font-semibold">description</h3>
+                  <p className="bg-gray-400 rounded-2xl p-2">{e.description}</p>
+                </div>
 
-              <div className="flex justify-between items-center mt-2">
-                <p>Start : {e.startDate}</p>
-                <p>End : {e.endDate}</p>
+                <div className="flex justify-between items-center mt-2">
+                  <p>Start : {e.startDate}</p>
+                  <p>End : {e.endDate}</p>
+                </div>
+                <div className="flex justify-end mt-2">
+                  <button
+                    className="bg-yellow-500 px-5 py-2 rounded-xl mx-2"
+                    onClick={() => {
+                      setEditingTodo(e);
+                      setEditToggle(true);
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="bg-red-500 px-5 py-2 rounded-xl"
+                    onClick={() => deleteTodo(e.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-              <div className="flex justify-end mt-2">
-                <button
-                  className="bg-yellow-500 px-5 py-2 rounded-xl mx-2"
-                  onClick={() => {
-                    setEditingTodo(e);
-                    setEditToggle(true);
-                  }}
-                >
-                  Edit
-                </button>
-                <button
-                  className="bg-red-500 px-5 py-2 rounded-xl"
-                  onClick={() => deleteTodo(e.id)}
-                >
-                  Delete
-                </button>
-              </div>
+            ))
+          ) : (
+            <div>
+              <p>ไม่พบรายการที่คุณตามหา</p>
             </div>
-          ))}
+          )}
         </div>
       </div>
 
