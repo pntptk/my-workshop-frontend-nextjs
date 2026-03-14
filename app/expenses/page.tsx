@@ -16,8 +16,12 @@ export default function ExpensesPage() {
   const [title, setTitle] = useState<string>("");
   const [amount, setAmount] = useState<number>();
   const [category, setCategory] = useState<string>();
+  const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [type, setType] = useState<"INCOME" | "EXPENSE">();
 
+
+
+  console.log("Date : ",date)
   useEffect(() => {
     fetchTransaction();
   }, []);
@@ -41,6 +45,7 @@ export default function ExpensesPage() {
             <input
               type="text"
               className="border border-black-2 rounded-sm p-2 outline-0"
+              onChange={(e)=>setTitle(e.target.value)}
             />
           </div>
           <div className="flex flex-col ">
@@ -48,6 +53,7 @@ export default function ExpensesPage() {
             <input
               type="number"
               className="border border-black-2 rounded-sm p-2 outline-0"
+              onChange={(e)=>setAmount(Number(e.target.value))}
             />
           </div>
           <div className="flex flex-col ">
@@ -69,6 +75,16 @@ export default function ExpensesPage() {
             <input
               type="text"
               className="border border-black-2 rounded-sm p-2 outline-0"
+              onChange={(e)=>setCategory(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col ">
+            <label htmlFor="">Date</label>
+            <input
+              type="date"
+              className="border border-black-2 rounded-sm p-2 outline-0"
+              value={date}
+              onChange={(e)=>setDate(e.target.value)}
             />
           </div>
         </div>
