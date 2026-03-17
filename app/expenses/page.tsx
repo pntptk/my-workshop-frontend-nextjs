@@ -102,6 +102,7 @@ export default function ExpensesPage() {
               <input
                 type="text"
                 className="border border-black-2 rounded-sm p-2 outline-0"
+                value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
             </div>
@@ -110,22 +111,25 @@ export default function ExpensesPage() {
               <input
                 type="number"
                 className="border border-black-2 rounded-sm p-2 outline-0"
+                value={amount}
                 onChange={(e) => setAmount(Number(e.target.value))}
               />
             </div>
           </div>
-          <div className="flex ">
+          <div className="flex space-x-2">
             <div className="flex flex-col ">
               <label htmlFor="">Category</label>
               <input
                 type="text"
+                value={category}
                 className="border border-black-2 rounded-sm p-2 outline-0"
                 onChange={(e) => setCategory(e.target.value)}
               />
             </div>
             <div className="flex flex-col">
-              <label htmlFor="">Type</label>
+              <label htmlFor="" className="">Type</label>
               <select
+              
                 name=""
                 id=""
                 value={type}
