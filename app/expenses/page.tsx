@@ -1,5 +1,6 @@
 "use client";
 
+import { log } from "console";
 import { useState, useEffect } from "react";
 
 type Transaction = {
@@ -16,6 +17,10 @@ export default function ExpensesPage() {
   const [title, setTitle] = useState<string>("");
   const [amount, setAmount] = useState<number>(0);
   const [category, setCategory] = useState<string>("");
+
+  const [toggleEdit, setToggleEdit] = useState(false);
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null);
 
   let total = 0;
   let totalIncome = 0;
@@ -57,6 +62,10 @@ export default function ExpensesPage() {
       alert("Title not found");
       return;
     }
+    if (type === "-") {
+      alert("Enter INCOME or EXPENSE");
+      return;
+    }
 
     const newTransaction = {
       title: title,
@@ -89,8 +98,49 @@ export default function ExpensesPage() {
     }
   };
 
-  console.log("type", type);
+  const deleteTransaction = async (id: string) => {
+    try {
+      const res = await fetch(`http://localhost:3001/expenses/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (res.ok) {
+        fetchTransaction();
+      }
+    } catch (err) {
+      console.log("delete transaction fail : ", err);
+      alert("Delete Transaction fail");
+    }
+  };
 
+  const updateTransaction = async () => {
+    if (!editingTransaction) return;
+
+    try {
+      const res = await fetch(
+        `http://localhost:3001/expenses/${editingTransaction.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editingTransaction),
+        },
+      );
+
+      if (res.ok) {
+        alert("Edit Transacion done ");
+
+        setToggleEdit(false);
+        setEditingTransaction(null);
+        fetchTransaction();
+      }
+    } catch (err) {
+      console.log("Edite transaction fail : ", err);
+      alert("update transaction fail");
+    }
+  };
+
+  console.log("type", type);
+  console.log("Editing Transaction : ", editingTransaction);
   return (
     <div className="bg-gray-400 w-full h-full min-h-screen flex flex-col items-center ">
       <div className="flex flex-col mt-5">
@@ -127,9 +177,10 @@ export default function ExpensesPage() {
               />
             </div>
             <div className="flex flex-col">
-              <label htmlFor="" className="">Type</label>
+              <label htmlFor="" className="">
+                Type
+              </label>
               <select
-              
                 name=""
                 id=""
                 value={type}
@@ -164,13 +215,19 @@ export default function ExpensesPage() {
       </div>
       <div className=" bg-gray-600 p-5 rounded-2xl mt-5 w-full max-w-md">
         <h1 className="text-2xl font-bold text-center">Summary</h1>
-        <div className={`flex flex-col  items-center mt-3 rounded-2xl
+        <div
+          className={`flex flex-col  items-center mt-3 rounded-2xl
           
 
-          `}>
+          `}
+        >
           <h2>Balance</h2>
-          <h3 className={`p-3 rounded-sm
-            ${total > 0 ?`bg-green-500` : `bg-red-500`}`}>{total}</h3>
+          <h3
+            className={`p-3 rounded-sm
+            ${total > 0 ? `bg-green-500` : `bg-red-500`}`}
+          >
+            {total}
+          </h3>
         </div>
         <div className="flex justify-between items-center">
           <div>
@@ -208,8 +265,136 @@ export default function ExpensesPage() {
                 <h2>{e.type}</h2>
                 <h2>{e.date}</h2>
               </div>
+              <div className="flex justify-end space-x-3.5">
+                <button
+                  className="bg-yellow-500 p-2 px-4 rounded-sm"
+                  onClick={() => {
+                    setEditingTransaction(e);
+                    setToggleEdit(true);
+                  }}
+                >
+                  Edit
+                </button>
+                <button
+                  className="bg-red-500 p-2 px-4 rounded-sm"
+                  onClick={() => deleteTransaction(e.id)}
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
+          {toggleEdit && editingTransaction && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-2xl ">
+              <div className="flex flex-col bg-gray-600 p-5 rounded-2xl">
+                <h1 className="text-center text-3xl font-bold">
+                  Editing Transaction
+                </h1>
+
+                <div className="flex space-x-5 mt-5">
+                  <div className="flex flex-col">
+                    <label htmlFor="" className="text-xl font-semibold">
+                      Title
+                    </label>
+                    <input
+                      type="text"
+                      value={editingTransaction.title}
+                      className="border border-black-2 rounded-sm p-2 outline-0"
+                      onChange={(e) =>
+                        setEditingTransaction({
+                          ...editingTransaction,
+                          title: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label htmlFor="" className="text-xl font-semibold">
+                      Amount
+                    </label>
+                    <input
+                      type="text"
+                      value={editingTransaction.amount}
+                      className="border border-black-2 rounded-sm p-2 outline-0"
+                      onChange={(e) =>
+                        setEditingTransaction({
+                          ...editingTransaction,
+                          amount: Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="flex space-x-2  mt-5 jutifly-center items-center">
+                  <div className="flex flex-col">
+                    <label htmlFor="" className="text-xl font-semibold">
+                      Category
+                    </label>
+                    <input
+                      type="text"
+                      value={editingTransaction.category}
+                      className="border border-black-2 rounded-sm p-2 outline-0"
+                      onChange={(e) =>
+                        setEditingTransaction({
+                          ...editingTransaction,
+                          category: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="flex flex-col mx-3">
+                    <label htmlFor="" className="text-xl font-semibold">
+                      Type
+                    </label>
+                    <select
+                      name=""
+                      id=""
+                      value={editingTransaction.type}
+                      className="bg-gray-700 border border-black-2 rounded-sm p-2 outline-0"
+                      onChange={(e) =>
+                        setEditingTransaction({
+                          ...editingTransaction,
+                          type: e.target.value as any,
+                        })
+                      }
+                    >
+                      <option value="INCOME">INCOME</option>
+                      <option value="EXPENSE">EXPENSE</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="mt-2">
+                  <label htmlFor="" className="text-xl font-semibold">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    className="flex border border-white p-2 rounded-sm "
+                    value={editingTransaction.date}
+                    onChange={(e) =>
+                      setEditingTransaction({
+                        ...editingTransaction,
+                        date: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="flex justify-end mt-3 space-x-3">
+                  <button
+                    className="bg-gray-400 text-black px-3 py-2 rounded-sm cursor-pointer"
+                    onClick={() => setToggleEdit(false)}
+                  >
+                    cancle
+                  </button>
+                  <button className="bg-yellow-500 px-3 py-2 rounded-sm cursor-pointer" onClick={()=>updateTransaction()}>
+                    update
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
