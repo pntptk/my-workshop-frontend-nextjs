@@ -139,6 +139,21 @@ export default function ExpensesPage() {
     }
   };
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState<
+    "ALL" | "INCOME" | "EXPENSE"
+  >("ALL");
+  const filterTransaction = transactions.filter((transaction) => {
+    const matchSearch = transaction.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    const matchType =
+      filterStatus === "ALL" || transaction.type === filterStatus;
+
+    return matchSearch && matchType;
+  });
+
   console.log("type", type);
   console.log("Editing Transaction : ", editingTransaction);
   return (
@@ -242,8 +257,37 @@ export default function ExpensesPage() {
       </div>
       <div className="mt-5 bg-gray-600 p-5 rounded-2xl w-full max-w-md">
         <h1 className="font-bold text-2xl text-center">Transaction</h1>
+        <div className="mt-3 flex flex-col justify-center ">
+          <input
+            type="text"
+            className="p-2 border border-white w-full rounded-sm outline-0"
+            placeholder="search...."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <div className="flex justify-around items-center mt-5 w-full">
+            {["ALL", "INCOME", "EXPENSE"].map((status) => {
+              const countTransaction =
+                status === "ALL"
+                  ? transactions.length
+                  : transactions.filter((e) => e.type === status).length;
+              return (
+                <button
+                  key={status}
+                  className={`p-3 rounded-full font-semibold 
+                ${filterStatus === status ? "bg-gray-700" : "bg-gray-500"}
+                `}
+                  onClick={() => setFilterStatus(status as any)}
+                >
+                  {status} ({countTransaction})
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="flex flex-col">
-          {transactions.map((e, i) => (
+          {filterTransaction.map((e, i) => (
             <div
               key={e.id}
               className={`bg-gray-500 mt-3 p-3 rounded-xl border-l-10
@@ -388,7 +432,10 @@ export default function ExpensesPage() {
                   >
                     cancle
                   </button>
-                  <button className="bg-yellow-500 px-3 py-2 rounded-sm cursor-pointer" onClick={()=>updateTransaction()}>
+                  <button
+                    className="bg-yellow-500 px-3 py-2 rounded-sm cursor-pointer"
+                    onClick={() => updateTransaction()}
+                  >
                     update
                   </button>
                 </div>

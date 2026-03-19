@@ -248,13 +248,15 @@ export default function Home() {
           <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden border border-gray-700">
             <div
               className={`${
-                progress < 50 ? `bg-yellow-500`:"bg-green-500"
+                progress < 50 ? `bg-yellow-500` : "bg-green-500"
               } h-full transition-all duration-500 ease-out`}
               style={{ width: `${progress}%` }}
             ></div>
           </div>
           <div className="flex justify-end mt-2 text-sm text-gray-400">
-            <span>{completedTasks} of {totalTasks} task completed </span>
+            <span>
+              {completedTasks} of {totalTasks} task completed{" "}
+            </span>
           </div>
         </div>
 
