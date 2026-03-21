@@ -1,6 +1,6 @@
 "use client";
 
-import { log } from "console";
+import { group, log } from "console";
 import { useState, useEffect } from "react";
 
 type Transaction = {
@@ -17,11 +17,17 @@ export default function ExpensesPage() {
   const [title, setTitle] = useState<string>("");
   const [amount, setAmount] = useState<number>(0);
   const [category, setCategory] = useState<string>("");
+  const [date, setDate] = useState<string>(
+    new Date().toISOString().split("T")[0],
+  );
+  const [type, setType] = useState<"INCOME" | "EXPENSE" | "-">("-");
 
+  //  Edit Transaction
   const [toggleEdit, setToggleEdit] = useState(false);
   const [editingTransaction, setEditingTransaction] =
     useState<Transaction | null>(null);
 
+  // calculate Transaction
   let total = 0;
   let totalIncome = 0;
   let totalExpense = 0;
@@ -40,12 +46,8 @@ export default function ExpensesPage() {
 
   calculateBalance();
 
-  const [date, setDate] = useState<string>(
-    new Date().toISOString().split("T")[0],
-  );
-  const [type, setType] = useState<"INCOME" | "EXPENSE" | "-">("-");
-
   console.log("Date : ", date);
+
   useEffect(() => {
     fetchTransaction();
   }, []);
@@ -154,6 +156,26 @@ export default function ExpensesPage() {
     return matchSearch && matchType;
   });
 
+  const groupedTransactions = filterTransaction.reduce(
+    (groups: { [key: string]: Transaction[] }, transaction) => {
+      const date = transaction.date;
+
+      if (!groups[date]) {
+        groups[date] = []; // สร้างลิ้นชักใหม่
+      }
+
+      groups[date].push(transaction); // หยิบใส่ลอ้นชัก
+      return groups;
+    },{},);
+
+  const sortedDates = Object.keys(groupedTransactions).sort(
+    (a, b) => new Date(b).getTime() - new Date(a).getTime(),
+  );
+
+
+
+  console.log("Group ",groupedTransactions)
+  console.log("Group Sort",sortedDates)
   console.log("type", type);
   console.log("Editing Transaction : ", editingTransaction);
   return (
@@ -286,7 +308,7 @@ export default function ExpensesPage() {
           </div>
         </div>
 
-        <div className="flex flex-col">
+        {/* <div className="flex flex-col">
           {filterTransaction.map((e, i) => (
             <div
               key={e.id}
@@ -442,6 +464,195 @@ export default function ExpensesPage() {
               </div>
             </div>
           )}
+        </div> */}
+
+        <div className="flex flex-col mt-4">
+          {
+            sortedDates.map((date)=>(
+              <div key={date} className="mb-6">
+                {/* Date (Divider) */}
+                <div className="flex justify-between items-center border-b border-gray-500 pb-1 mb-2">
+                  <span className="text-grey-300 font-bold ">{date}</span>
+                  <span className="text-xs text-gray-400">{groupedTransactions[date].length} รายการ </span>
+
+                </div>
+
+
+                {/* Transaction Show */}
+
+                <div className="flex flex-col space-y-3">
+                  {
+                    groupedTransactions[date].map((e)=>(
+                     <div
+              key={e.id}
+              className={`bg-gray-500 mt-3 p-3 rounded-xl border-l-10
+                ${e.type === "INCOME" ? `border-green-500` : `border-red-500 `}
+
+            `}
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-semibold">{e.title}</h2>
+                  <h2>{e.category}</h2>
+                </div>
+
+                <div>
+                  <h2 className="font-semibold text-xl">{e.amount} baht</h2>
+                </div>
+              </div>
+              <div className="flex justify-between">
+                <h2>{e.type}</h2>
+                <h2>{e.date}</h2>
+              </div>
+              <div className="flex justify-end space-x-3.5">
+                <button
+                  className="bg-yellow-500 p-2 px-4 rounded-sm"
+                  onClick={() => {
+                    setEditingTransaction(e);
+                    setToggleEdit(true);
+                  }}
+                >
+                  Edit
+                </button>
+                <button
+                  className="bg-red-500 p-2 px-4 rounded-sm"
+                  onClick={() => deleteTransaction(e.id)}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+                    ))
+                  }
+
+                </div>
+
+
+
+
+
+              </div>
+
+
+
+
+            ))
+          }
+          {toggleEdit && editingTransaction && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-2xl ">
+              <div className="flex flex-col bg-gray-600 p-5 rounded-2xl">
+                <h1 className="text-center text-3xl font-bold">
+                  Editing Transaction
+                </h1>
+
+                <div className="flex space-x-5 mt-5">
+                  <div className="flex flex-col">
+                    <label htmlFor="" className="text-xl font-semibold">
+                      Title
+                    </label>
+                    <input
+                      type="text"
+                      value={editingTransaction.title}
+                      className="border border-black-2 rounded-sm p-2 outline-0"
+                      onChange={(e) =>
+                        setEditingTransaction({
+                          ...editingTransaction,
+                          title: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label htmlFor="" className="text-xl font-semibold">
+                      Amount
+                    </label>
+                    <input
+                      type="text"
+                      value={editingTransaction.amount}
+                      className="border border-black-2 rounded-sm p-2 outline-0"
+                      onChange={(e) =>
+                        setEditingTransaction({
+                          ...editingTransaction,
+                          amount: Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="flex space-x-2  mt-5 jutifly-center items-center">
+                  <div className="flex flex-col">
+                    <label htmlFor="" className="text-xl font-semibold">
+                      Category
+                    </label>
+                    <input
+                      type="text"
+                      value={editingTransaction.category}
+                      className="border border-black-2 rounded-sm p-2 outline-0"
+                      onChange={(e) =>
+                        setEditingTransaction({
+                          ...editingTransaction,
+                          category: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="flex flex-col mx-3">
+                    <label htmlFor="" className="text-xl font-semibold">
+                      Type
+                    </label>
+                    <select
+                      name=""
+                      id=""
+                      value={editingTransaction.type}
+                      className="bg-gray-700 border border-black-2 rounded-sm p-2 outline-0"
+                      onChange={(e) =>
+                        setEditingTransaction({
+                          ...editingTransaction,
+                          type: e.target.value as any,
+                        })
+                      }
+                    >
+                      <option value="INCOME">INCOME</option>
+                      <option value="EXPENSE">EXPENSE</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="mt-2">
+                  <label htmlFor="" className="text-xl font-semibold">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    className="flex border border-white p-2 rounded-sm "
+                    value={editingTransaction.date}
+                    onChange={(e) =>
+                      setEditingTransaction({
+                        ...editingTransaction,
+                        date: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="flex justify-end mt-3 space-x-3">
+                  <button
+                    className="bg-gray-400 text-black px-3 py-2 rounded-sm cursor-pointer"
+                    onClick={() => setToggleEdit(false)}
+                  >
+                    cancle
+                  </button>
+                  <button
+                    className="bg-yellow-500 px-3 py-2 rounded-sm cursor-pointer"
+                    onClick={() => updateTransaction()}
+                  >
+                    update
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
     </div>
