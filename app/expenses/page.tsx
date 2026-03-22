@@ -145,6 +145,7 @@ export default function ExpensesPage() {
   const [filterStatus, setFilterStatus] = useState<
     "ALL" | "INCOME" | "EXPENSE"
   >("ALL");
+  const [dateSearch,setDateSearch] = useState("");
   const filterTransaction = transactions.filter((transaction) => {
     const matchSearch = transaction.title
       .toLowerCase()
@@ -153,7 +154,12 @@ export default function ExpensesPage() {
     const matchType =
       filterStatus === "ALL" || transaction.type === filterStatus;
 
-    return matchSearch && matchType;
+    
+      const matchDate = 
+        dateSearch === "" || new Date(transaction.date).getTime() === new Date(dateSearch).getTime();
+      
+
+    return matchSearch && matchType && matchDate  ;
   });
 
   const groupedTransactions = filterTransaction.reduce(
@@ -166,16 +172,17 @@ export default function ExpensesPage() {
 
       groups[date].push(transaction); // หยิบใส่ลอ้นชัก
       return groups;
-    },{},);
+    },
+    {},
+  );
 
   const sortedDates = Object.keys(groupedTransactions).sort(
     (a, b) => new Date(b).getTime() - new Date(a).getTime(),
   );
 
-
-
-  console.log("Group ",groupedTransactions)
-  console.log("Group Sort",sortedDates)
+  console.log("Date ttttt",new Date("2026-03-21").getTime())
+  console.log("Group ", groupedTransactions);
+  console.log("Group Sort", sortedDates);
   console.log("type", type);
   console.log("Editing Transaction : ", editingTransaction);
   return (
@@ -306,6 +313,7 @@ export default function ExpensesPage() {
               );
             })}
           </div>
+          <input type="date"  value={dateSearch} onChange={(e)=> setDateSearch(e.target.value)} className="p-2 border border-white-2 rounded-xl outline-0 mt-5"/>
         </div>
 
         {/* <div className="flex flex-col">
@@ -467,77 +475,64 @@ export default function ExpensesPage() {
         </div> */}
 
         <div className="flex flex-col mt-4">
-          {
-            sortedDates.map((date)=>(
-              <div key={date} className="mb-6">
-                {/* Date (Divider) */}
-                <div className="flex justify-between items-center border-b border-gray-500 pb-1 mb-2">
-                  <span className="text-grey-300 font-bold ">{date}</span>
-                  <span className="text-xs text-gray-400">{groupedTransactions[date].length} รายการ </span>
+          {sortedDates.map((date) => (
+            <div key={date} className="mb-6">
+              {/* Date (Divider) */}
+              <div className="flex justify-between items-center border-b border-gray-500 pb-1 mb-2">
+                <span className="text-grey-300 font-bold ">{date}</span>
+                <span className="text-xs text-gray-400">
+                  {groupedTransactions[date].length} รายการ{" "}
+                </span>
+              </div>
 
-                </div>
+              {/* Transaction Show */}
 
-
-                {/* Transaction Show */}
-
-                <div className="flex flex-col space-y-3">
-                  {
-                    groupedTransactions[date].map((e)=>(
-                     <div
-              key={e.id}
-              className={`bg-gray-500 mt-3 p-3 rounded-xl border-l-10
+              <div className="flex flex-col space-y-3">
+                {groupedTransactions[date].map((e) => (
+                  <div
+                    key={e.id}
+                    className={`bg-gray-500 mt-3 p-3 rounded-xl border-l-10
                 ${e.type === "INCOME" ? `border-green-500` : `border-red-500 `}
 
             `}
-            >
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="text-2xl font-semibold">{e.title}</h2>
-                  <h2>{e.category}</h2>
-                </div>
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h2 className="text-2xl font-semibold">{e.title}</h2>
+                        <h2>{e.category}</h2>
+                      </div>
 
-                <div>
-                  <h2 className="font-semibold text-xl">{e.amount} baht</h2>
-                </div>
-              </div>
-              <div className="flex justify-between">
-                <h2>{e.type}</h2>
-                <h2>{e.date}</h2>
-              </div>
-              <div className="flex justify-end space-x-3.5">
-                <button
-                  className="bg-yellow-500 p-2 px-4 rounded-sm"
-                  onClick={() => {
-                    setEditingTransaction(e);
-                    setToggleEdit(true);
-                  }}
-                >
-                  Edit
-                </button>
-                <button
-                  className="bg-red-500 p-2 px-4 rounded-sm"
-                  onClick={() => deleteTransaction(e.id)}
-                >
-                  Delete
-                </button>
+                      <div>
+                        <h2 className="font-semibold text-xl">
+                          {e.amount} baht
+                        </h2>
+                      </div>
+                    </div>
+                    <div className="flex justify-between">
+                      <h2>{e.type}</h2>
+                      <div className="flex justify-end space-x-3.5">
+                        <button
+                          className="bg-yellow-500 p-1 px-3 rounded-sm"
+                          onClick={() => {
+                            setEditingTransaction(e);
+                            setToggleEdit(true);
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="bg-red-500 p-1 px-3 rounded-sm"
+                          onClick={() => deleteTransaction(e.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-                    ))
-                  }
-
-                </div>
-
-
-
-
-
-              </div>
-
-
-
-
-            ))
-          }
+          ))}
           {toggleEdit && editingTransaction && (
             <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-2xl ">
               <div className="flex flex-col bg-gray-600 p-5 rounded-2xl">
@@ -652,7 +647,6 @@ export default function ExpensesPage() {
               </div>
             </div>
           )}
-
         </div>
       </div>
     </div>
